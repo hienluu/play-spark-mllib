@@ -1,0 +1,26 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# An example controller showing a sample home page
+GET     /                           controllers.HomeController.index
+# An example controller showing how to use dependency injection
+GET     /count                      controllers.CountController.count
+# An example controller showing how to write asynchronous code
+GET     /message                    controllers.AsyncController.message
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
+
+
+GET     /webjars/*file              controllers.WebJarAssets.at(file)
+
+GET     /locations/json              controllers.ApplicationController.index
+GET     /locations                   controllers.ApplicationController.html
+
+GET     /movies                      controllers.MovieController.index
+GET     /movies/trainModel           controllers.MovieController.trainModel
+GET     /movies/randomMovies         controllers.MovieController.randomMovies
+GET     /movies/randomUsers          controllers.MovieController.randomUsers
+GET     /movies/recommendedUsers/:movieId     controllers.MovieController.recommendedUsers(movieId:Int)
+GET     /movies/actualVsPredicted/:userId          controllers.MovieController.compareActualVsPredicted(userId:Int)

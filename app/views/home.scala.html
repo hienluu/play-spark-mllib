@@ -1,0 +1,61 @@
+@(stats: Stats, message:String ="none")
+
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Welcome To Movies Recommendation w/ Apache Spark</title>
+        <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/main.css")">
+        <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        <script src="@routes.Assets.versioned("javascripts/hello.js")" type="text/javascript"></script>
+    </head>
+    <body>
+      <nav class="navbar navbar-light" style="background-color: #e3f2fd;">
+          <a class="navbar-brand" href="/movies">
+            Movies Recommendations
+          </a>
+          <a class="nav-link" href="/movies/trainModel">Train Model</a>
+      </nav>
+
+      @if(message != "none") {
+          <div class="alert alert-success" role="alert" class="container">
+             <span>@message</span>
+             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+      }
+
+
+      <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+        <h2 class="display-10">Dataset Information</h2>
+        <p class="lead">Movie Recommendations</p>
+       </div>
+       <div class="container" style="width: 36rem;">
+         <div class="row">
+           <div class="col-sm">
+               <table cellpadding="8" border="1" class="table" width="500">
+               <thead>
+                   <tr>
+                     <th scope="col">Movies</th>
+                     <th scope="col">User</th>
+                     <th scope="col">Ratings</th>
+                   </tr>
+               </thead>
+               <tbody>
+               <tr>
+                 <td><a href="/movies/randomMovies">@("%,d".format(stats.numMovies))</a></td>
+                 <td><a href="/movies/randomUsers">@("%,d".format(stats.numUsers))</a></td>
+                 <td>@("%,d".format(stats.numRatings))</td>
+               </tr>
+               </tbody>
+               </table>
+           </div>
+         </div>
+        </div>
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    </body>
+</html>

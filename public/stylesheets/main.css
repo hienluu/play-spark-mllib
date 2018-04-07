@@ -1,0 +1,13 @@
+.center-div
+{
+     margin: 0 auto;
+     width: 900px;
+}
+
+table {
+    margin: 0 auto; /* or margin: 0 auto 0 auto */
+}
+
+.genre {
+    font-size: 80%;
+}
