@@ -12,7 +12,7 @@ import info.movito.themoviedbapi._
   */
 object Init extends GlobalSettings {
   var sparkSession: SparkSession = _
-  //var tmdb:TmdbApi = _
+
   var linksDF:DataFrame = _
   var imgDF:DataFrame = _
   var moviesDF:DataFrame = _
@@ -25,7 +25,6 @@ object Init extends GlobalSettings {
   var model:ALSModel = _
   var stats:Stats = _
 
-  //val apiKey = "25fa0f0de4320799fcf7c758203034ec"
 
   /**
     * On start load the json data from conf/data.json into in-memory Spark
@@ -72,8 +71,7 @@ object Init extends GlobalSettings {
 
     movieWithImg.cache()
     movieWithImg.count()
-
-    //tmdb = new TmdbApi(apiKey)
+    
 
     computeStats()
   }
