@@ -3,9 +3,10 @@ package bootstrap
 import models.Stats
 import org.apache.spark.ml.recommendation.{ALS, ALSModel}
 import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.functions._
 
 import play.api._
-import info.movito.themoviedbapi._
+
 
 /**
   * Created by hluu on 4/4/18.
@@ -36,8 +37,6 @@ object Init extends GlobalSettings {
       .config("spark.sql.shuffle.partitions", "20")
       .getOrCreate()
 
-    //val dataFrame1 = sparkSession.read.json("conf/data.json")
-    //dataFrame1.createOrReplaceTempView("godzilla")
 
     moviesDF = sparkSession.read.option("header", "true")
            .option("inferSchema", "true").csv("conf/movielens-movies.csv")
@@ -46,13 +45,6 @@ object Init extends GlobalSettings {
 
     moviesDF.createOrReplaceTempView("movies")
 
-    /*
-    linksDF = sparkSession.read.option("header", "true")
-      .option("inferSchema", "true").csv("conf/movielens-links.csv")
-
-    linksDF.cache()
-    linksDF.createOrReplaceTempView("links")
-*/
     ratingsDF = sparkSession.read.option("header", "true")
       .option("inferSchema", "true").csv("conf/movielens-ratings.csv")
 
@@ -71,7 +63,7 @@ object Init extends GlobalSettings {
 
     movieWithImg.cache()
     movieWithImg.count()
-    
+
 
     computeStats()
   }
@@ -83,6 +75,13 @@ object Init extends GlobalSettings {
 
     stats = Stats(movieCount, userCount, ratingCount)
   }
+
+
+  def getTopKRatedStat(column:String, k: Int) : DataFrame = {
+    Logger.info(s"getTopKRatedStat: $column, k: $k")
+    ratingsDF.groupBy(column).count().orderBy(col("count").desc).limit(k)
+  }
+
 
   /**
     * On stop clear the sparksession

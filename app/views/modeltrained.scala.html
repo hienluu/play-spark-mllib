@@ -1,4 +1,4 @@
-@(stats: Stats, popularMovies:List[Movie], popularRater:List[UserRatingStat])
+@(stats: Stats, message:String)
 
 
 <!DOCTYPE html>
@@ -18,8 +18,19 @@
           <a class="nav-link" href="/movies/trainModel">Train Model</a>
       </nav>
 
-      <div class="px-1 py-1 pt-md-5 pb-md-4 mx-auto text-center">
-        <h5 class="display-5">Movie Recommendation Dataset Information</h5>
+      @if(message != "none") {
+          <div class="alert alert-success" role="alert" class="container">
+             <span>@message</span>
+             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+      }
+
+
+      <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+        <h2 class="display-10">Dataset Information</h2>
+        <p class="lead">Movie Recommendations</p>
        </div>
        <div class="container" style="width: 36rem;">
          <div class="row">
@@ -43,28 +54,6 @@
            </div>
          </div>
         </div>
-
-        <div class="container w-80">
-            <div class="card-deck text-center">
-              @for(movie <- popularMovies) {
-
-                <div class="card"  >
-                  <div class="card-header">
-                    <h6 class="my-0 font-weight-normal">@movie.count - @movie.title</h6>
-                  </div>
-                  <a href="/movies/recommendedUsers/@movie.movieId">
-                   <img class="card-img-top" height="250" src="https://image.tmdb.org/t/p/w500/@movie.posterPath" alt="Card image cap">
-                  </a>
-                  <div class="card-footer">
-                   <small class="text-muted">@movie.genres</small>
-                  </div>
-                </div>
-
-              }
-             </div>
-        </div>
-
-
         <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>

@@ -2,17 +2,16 @@ package controllers
 
 import javax.inject.Inject
 
-import models.{Movie, Rating, RatingSummary}
+import models.{Movie, Rating, RatingSummary, UserRatingStat}
 import bootstrap.Init
 import play.api.i18n.MessagesApi
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, AnyContent, Controller}
+import play.api.mvc.{Action, Controller}
 import play.api.Logger
-import play.api.libs.json._
 import play.api.libs.json.Reads._
-import play.api.libs.functional.syntax._
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
+
 
 
 /**
@@ -23,7 +22,35 @@ class MovieController @Inject()(implicit webJarAssets: WebJarAssets,
 
 
   def index = Action {
-    Ok(views.html.home(Init.stats))
+    val popularMovies = Init.getTopKRatedStat("movieId", 5)
+    val popularMovieStrings = decorateMovie(popularMovies).toJSON.collect()
+
+    val popularMovieList = scala.collection.mutable.ListBuffer.empty[Movie]
+    for (movieStr <- popularMovieStrings) {
+      val movie = jsonToMovieWithCount(movieStr)
+      Logger.info("count: " + movie.count)
+      popularMovieList +=  movie
+    }
+
+    val popularRaters = Init.getTopKRatedStat("userId", 10)
+    val popularRaterList = scala.collection.mutable.ListBuffer.empty[UserRatingStat]
+    for (raterStr <- popularRaters.toJSON.collect()) {
+
+      val raterJSON:JsValue = Json.parse(raterStr)
+      popularRaterList += UserRatingStat((raterJSON \ "userId").as[Int],
+        (raterJSON \ "count").as[Int])
+
+    }
+
+    val sortedPopMovies = popularMovieList.sortWith((m1, m2) => m2.count < m1.count)
+
+    Ok(views.html.home(Init.stats, sortedPopMovies.toList, popularRaterList.toList))
+  }
+
+  def trainModel = Action {
+
+    Init.trainModel
+    Ok(views.html.modeltrained(Init.stats,   "Model training completed"))
   }
 
   def movies = Action  {
@@ -39,8 +66,6 @@ class MovieController @Inject()(implicit webJarAssets: WebJarAssets,
       val movieStrings = decorateMovie(smallSetMoviesDF).toJSON.collect()
 
       val movieList = scala.collection.mutable.ListBuffer.empty[Movie]
-
-      //val tmdb = Init.tmdb
 
       for (movieStr <- movieStrings) {
 
@@ -67,11 +92,7 @@ class MovieController @Inject()(implicit webJarAssets: WebJarAssets,
 
   }
 
-  def trainModel = Action {
 
-    Init.trainModel
-    Ok(views.html.home(Init.stats, "Model training completed"))
-  }
 
   def randomMovies = Action {
     val randomMoviesDF = Init.getMoviesDF.sample(false, 0.5,System.currentTimeMillis).limit(10)
@@ -82,16 +103,6 @@ class MovieController @Inject()(implicit webJarAssets: WebJarAssets,
 
     val movieList = scala.collection.mutable.ListBuffer.empty[Movie]
     for (movieStr <- movieStrings) {
-      /*val movieJSON:JsValue = Json.parse(movieStr)
-
-      val movieId = (movieJSON \ "movieId").as[Int]
-      val title = (movieJSON \ "title").as[String]
-      val genres = (movieJSON \ "genres").as[String]
-
-      val imgUrl = (movieJSON \ "imgUrl").asOpt[String] match {
-        case Some(url) => url
-        case None => ""
-      }*/
 
       movieList +=  jsonToMovie(movieStr)
     }
@@ -99,7 +110,7 @@ class MovieController @Inject()(implicit webJarAssets: WebJarAssets,
     Ok(views.html.movies(movieList.toList))
   }
 
-  private def jsonToMovie(movieStr:String ) : Movie = {
+  private def jsonToMovieWithCount(movieStr:String) : Movie = {
     val movieJSON:JsValue = Json.parse(movieStr)
 
     val movieId = (movieJSON \ "movieId").as[Int]
@@ -110,6 +121,24 @@ class MovieController @Inject()(implicit webJarAssets: WebJarAssets,
       case Some(url) => url
       case None => ""
     }
+
+    val count = (movieJSON \ "count").as[Int]
+    Movie(movieId, title, genres, imgUrl, count)
+
+  }
+
+  private def jsonToMovie(movieStr:String) : Movie = {
+    val movieJSON:JsValue = Json.parse(movieStr)
+
+    val movieId = (movieJSON \ "movieId").as[Int]
+    val title = (movieJSON \ "title").as[String]
+    val genres = (movieJSON \ "genres").as[String]
+
+    val imgUrl = (movieJSON \ "imgUrl").asOpt[String] match {
+      case Some(url) => url
+      case None => ""
+    }
+
 
     Movie(movieId, title, genres, imgUrl)
 
@@ -157,7 +186,6 @@ class MovieController @Inject()(implicit webJarAssets: WebJarAssets,
   }
 
   def randomUsers = Action {
-    Ok(views.html.home(Init.stats, "Model training completed"))
 
     val userRatingsDF = Init.getRatingsDF.groupBy("userId").count()
 
@@ -241,7 +269,12 @@ class MovieController @Inject()(implicit webJarAssets: WebJarAssets,
 
     val joinedDF = movieWithTmdbId.join(moviesDF, "movieId")
 
-    joinedDF.select("movieId","title","genres", "imgUrl")
+
+    if (joinedDF.schema.fields.map(f => f.name).contains("count")) {
+      joinedDF.select("movieId", "title", "genres", "imgUrl", "count")
+    } else {
+      joinedDF.select("movieId", "title", "genres", "imgUrl")
+    }
   }
 
   private def decorateRating(ratingsDF:DataFrame) : DataFrame = {
