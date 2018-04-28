@@ -22,16 +22,17 @@
         <h5 class="display-10">User Rating Statistics</h5>
 
        </div>
-       <div class="container" style="width: 500px">
+       <div class="container" style="width: 600px">
             <table class="table">
                 <thead>
-                    <tr><th>User Id</th><th>Count</th></tr>
+                    <tr><th>User Id</th><th>Count</th><th>Genre Info</th></tr>
                 </thead>
                 <tbody>
                 @for(userRating <- userRatingSummary) {
                    <tr>
                      <td><a href="/movies/actualVsPredicted/@userRating.userId">@userRating.userId</a></td>
                      <td>@userRating.count</td>
+                     <td>@userRating.genreInfo</td>
                    </tr>
                   }
                 </tbody>

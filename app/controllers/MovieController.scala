@@ -50,6 +50,7 @@ class MovieController @Inject()(implicit webJarAssets: WebJarAssets,
   def trainModel = Action {
 
     Init.trainModel
+    //Redirect("/movies")
     Ok(views.html.modeltrained(Init.stats,   "Model training completed"))
   }
 
@@ -207,11 +208,26 @@ class MovieController @Inject()(implicit webJarAssets: WebJarAssets,
       val count = (ratingJSON \ "count").as[Int]
 
 
-      userRatingsList +=  RatingSummary(userId, count)
+      userRatingsList +=  RatingSummary(userId, count, getTopGenreInfo(userId))
     }
 
     Ok(views.html.user_rating_summary(userRatingsList.toList))
 
+  }
+
+  private def getTopGenreInfo(userId:Int) : String = {
+    val topGenreDF = Init.getTopGenresByUserId(userId)
+
+    var genreInfoList = scala.collection.mutable.ListBuffer[String]()
+    for (topGenreStr <- topGenreDF.toJSON.collect()) {
+      val topGenreJSON:JsValue = Json.parse(topGenreStr)
+      val genre = (topGenreJSON \ "genre").as[String]
+      val count = (topGenreJSON \ "genre_count").as[Int]
+
+      genreInfoList += s"$genre:$count";
+    }
+
+    genreInfoList.mkString(", ")
   }
 
 
@@ -227,7 +243,9 @@ class MovieController @Inject()(implicit webJarAssets: WebJarAssets,
     val recommendedMoviesDF:DataFrame = Init.getRecommendMoviesForUser(userId)
     val recommendMovies:List[Rating] = convertToRatingObjects(recommendedMoviesDF)
 
-    Ok(views.html.comparerating(userId, userRatings, recommendMovies))
+    val genreInfo = getTopGenreInfo(userId)
+
+    Ok(views.html.comparerating(userId, userRatings, recommendMovies, genreInfo))
   }
 
   private def convertToRatingObjects(ratingDF:DataFrame) : List[Rating] = {
@@ -285,8 +303,8 @@ class MovieController @Inject()(implicit webJarAssets: WebJarAssets,
 
     val joinedDF = movieWithTmdbId.join(ratingsDF, "movieId")
 
-    Logger.info("**** joinedDF ****")
-    joinedDF.printSchema()
+    //Logger.info("**** joinedDF ****")
+    //joinedDF.printSchema()
     joinedDF.select("userId", "movieId","rating", "title", "genres", "imgUrl")
   }
 

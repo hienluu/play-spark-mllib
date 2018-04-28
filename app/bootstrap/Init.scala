@@ -3,7 +3,9 @@ package bootstrap
 import models.Stats
 import org.apache.spark.ml.recommendation.{ALS, ALSModel}
 import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions._
+
 
 import play.api._
 
@@ -22,6 +24,8 @@ object Init extends GlobalSettings {
 
   var top10MoviesPerUser:DataFrame = _
   var top10UsersPerMovie:DataFrame = _
+
+  var topGenresPerUserDF:DataFrame = _
 
   var model:ALSModel = _
   var stats:Stats = _
@@ -48,7 +52,7 @@ object Init extends GlobalSettings {
     ratingsDF = sparkSession.read.option("header", "true")
       .option("inferSchema", "true").csv("conf/movielens-ratings.csv")
 
-    ratingsDF.createOrReplaceTempView("links")
+    ratingsDF.createOrReplaceTempView("ratings")
 
     ratingsDF.cache()
 
@@ -63,6 +67,23 @@ object Init extends GlobalSettings {
 
     movieWithImg.cache()
     movieWithImg.count()
+
+    // user rated movies
+    val userRatedMoviesDF = ratingsDF.join(moviesDF, "movieId")
+    val moviesGenreDF = userRatedMoviesDF.select(col("userId"),
+      col("movieId"), explode(split(col("genres"),"\\|").as("genreArr")).as("genre"))
+    val moviesGenreGroupDF = moviesGenreDF.select(col("userId"), col("genre"))
+      .groupBy(col("userId"), col("genre")).agg(count("*") as "genre_count")
+
+
+    val forRankingWindow = Window.partitionBy("userId").orderBy(desc("genre_count"))
+
+    topGenresPerUserDF = moviesGenreGroupDF.withColumn("rank", rank().over(forRankingWindow))
+      .where(col("rank").lt( 4))
+
+
+    topGenresPerUserDF.cache()
+    topGenresPerUserDF.count()
 
 
     computeStats()
@@ -112,6 +133,14 @@ object Init extends GlobalSettings {
 
   def getMovieWithImg : DataFrame = {
     movieWithImg
+  }
+
+  def getTopGenresPerUserDF: DataFrame = {
+    topGenresPerUserDF
+  }
+
+  def getTopGenresByUserId(userId:Int) : DataFrame = {
+    topGenresPerUserDF.where(s"userId == $userId")
   }
 
   def getMovieById(movieId: Int): DataFrame = {
