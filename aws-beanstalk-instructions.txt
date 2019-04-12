@@ -1,0 +1,40 @@
+https://stackoverflow.com/questions/22135025/best-way-to-deploy-play2-app-using-amazon-beanstalk
+
+In build.sbt I added this lines:
+import com.typesafe.sbt.packager.docker.{ExecCmd, Cmd}
+
+// [...]
+
+dockerCommands := Seq(
+  Cmd("FROM","java:openjdk-8-jre"),
+  Cmd("MAINTAINER","myname"),
+  Cmd("EXPOSE","9000"),
+  Cmd("ADD","stage /"),
+  Cmd("WORKDIR","/opt/docker"),
+  Cmd("RUN","[\"chown\", \"-R\", \"daemon\", \".\"]"),
+  Cmd("RUN","[\"chmod\", \"+x\", \"bin/play-spark\"]"),
+  Cmd("USER","daemon"),
+  Cmd("ENTRYPOINT","[\"bin/play-spark\", \"-J-Xms128m\", \"-J-Xmx512m\", \"-J-server\"]"),
+  ExecCmd("CMD")
+)
+
+
+activator clean docker:stage
+
+
+I opened the [project]/target/docker directory and created the file Dockerrun.aws.json. This was its content:
+{
+  "AWSEBDockerrunVersion": "1",
+  "Ports": [
+    {
+      "ContainerPort": "9000"
+    }
+  ]
+}
+
+
+/// test out the app
+
+$ docker build -t play-spark .
+$ docker images
+$ docker run -p 9000:9000 play-spark

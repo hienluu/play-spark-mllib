@@ -17,6 +17,10 @@
           <a class="navbar-brand" href="/movies">
             Movies Recommendations
           </a>
+          <form class="form-inline my-2 my-lg-0" action="/movies/actualVsPredicted" method="GET">
+              <input class="form-control mr-sm-2" type="text" name="userId" placeholder="User Id" aria-label="User Id">
+              <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+          </form>
           <a class="nav-link" href="/movies/trainModel">Train Model</a>
       </nav>
 
@@ -25,7 +29,7 @@
         <h6 class="display-08">@genreInfo</h6>
        </div>
 
-       <div class="center-div">
+       <div class="container">
         <table class="table">
          <thead>
             <tr><th scope="col">Actual Rating</th><th scope="col">Recommendation</th></tr>

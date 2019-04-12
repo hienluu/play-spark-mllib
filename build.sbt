@@ -1,3 +1,5 @@
+import com.typesafe.sbt.packager.docker.{ExecCmd, Cmd}
+
 name := """play-spark"""
 
 version := "1.0-SNAPSHOT"
@@ -25,4 +27,18 @@ libraryDependencies ++= Seq(
   //"com.typesafe.akka" % "akka-actor_2.11" % "2.3.7"
 
 )
+
+dockerCommands := Seq(
+  Cmd("FROM","java:openjdk-8-jre"),
+  Cmd("MAINTAINER","hluu"),
+  Cmd("EXPOSE","9000"),
+  Cmd("ADD","stage /"),
+  Cmd("WORKDIR","/opt/docker"),
+  Cmd("RUN","[\"chown\", \"-R\", \"daemon\", \".\"]"),
+  Cmd("RUN","[\"chmod\", \"+x\", \"bin/play-spark\"]"),
+  Cmd("USER","daemon"),
+  Cmd("ENTRYPOINT","[\"bin/play-spark\", \"-J-Xms128m\", \"-J-Xmx512m\", \"-J-server\"]"),
+  ExecCmd("CMD")
+)
+
 

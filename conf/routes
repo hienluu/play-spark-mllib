@@ -24,3 +24,6 @@ GET     /movies/randomMovies         controllers.MovieController.randomMovies
 GET     /movies/randomUsers          controllers.MovieController.randomUsers
 GET     /movies/recommendedUsers/:movieId     controllers.MovieController.recommendedUsers(movieId:Int)
 GET     /movies/actualVsPredicted/:userId          controllers.MovieController.compareActualVsPredicted(userId:Int)
+
+GET     /movies/recommendedUsers     controllers.MovieController.recommendedUsers(movieId:Int)
+GET     /movies/actualVsPredicted     controllers.MovieController.compareActualVsPredicted(userId:Int)

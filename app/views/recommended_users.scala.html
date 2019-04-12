@@ -15,10 +15,14 @@
           <a class="navbar-brand" href="/movies">
             Movies Recommendations
           </a>
+          <form class="form-inline my-2 my-lg-0" action="/movies/recommendedUsers" method="GET">
+              <input class="form-control mr-sm-2" type="text" name="movieId" placeholder="Movie Id" aria-label="Movie Id">
+              <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+          </form>
           <a class="nav-link" href="/movies/trainModel">Train Model</a>
       </nav>
       <div class="px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
-        <h4 class="display-7">User Recommendation</h4>
+        <h4 class="display-7">User Recommendations for Movie #@movie.movieId</h4>
        </div>
       <div class="container">
          <div class="row" >
