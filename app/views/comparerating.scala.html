@@ -1,4 +1,4 @@
-@(userId:Int, userRatedMovies:List[Rating], recommendMovies:List[Rating], genreInfo:String)
+@(userId:Int, userRatedMovies:List[Rating], recommendMovies:List[Rating], genreInfo:String, userRatingSummaryStats:UserRatingSummaryStat)
 
 
 <!DOCTYPE html>
@@ -25,14 +25,34 @@
       </nav>
 
        <div class="px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
-        <h5 class="display-10">Actual vs Predicted Movies for user @userId</h5>
+        <h5 class="display-10">Actual vs Recommended Movies for user #@userId</h5>
         <h6 class="display-08">@genreInfo</h6>
+        <table class="table table-sm" style="width:50%">
+          <thead>
+            <tr>
+              <th scope="col">Count</th>
+              <th scope="col">Mean</th>
+              <th scope="col">Stddev</th>
+              <th scope="col">Min</th>
+              <th scope="col">Max</th>
+            </tr>
+         </thead>
+         <tbody>
+            <tr>
+              <td>@userRatingSummaryStats.count</td>
+              <td>@userRatingSummaryStats.mean</td>
+              <td>@userRatingSummaryStats.stddev</td>
+              <td>@userRatingSummaryStats.min</td>
+              <td>@userRatingSummaryStats.max</td>
+            </tr>
+         </tbody>
+        </table>
        </div>
 
        <div class="container">
         <table class="table">
-         <thead>
-            <tr><th scope="col">Actual Rating</th><th scope="col">Recommendation</th></tr>
+         <thead align="middle">
+            <tr><th scope="col">User Rated</th><th scope="col">Recommendations</th></tr>
          </thead>
          <tbody>
          <tr>

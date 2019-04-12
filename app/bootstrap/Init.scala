@@ -135,6 +135,10 @@ object Init extends GlobalSettings {
     movieWithImg
   }
 
+  def getUserRatingSummaryStats(userId:Int) : DataFrame = {
+    ratingsDF.where(s"userId == $userId").select("rating").describe()
+  }
+
   def getTopGenresPerUserDF: DataFrame = {
     topGenresPerUserDF
   }

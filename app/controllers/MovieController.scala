@@ -1,8 +1,7 @@
 package controllers
 
 import javax.inject.Inject
-
-import models.{Movie, Rating, RatingSummary, UserRatingStat}
+import models._
 import bootstrap.Init
 import play.api.i18n.MessagesApi
 import play.api.libs.json.{JsValue, Json}
@@ -215,6 +214,8 @@ class MovieController @Inject()(implicit webJarAssets: WebJarAssets,
 
   }
 
+
+
   private def getTopGenreInfo(userId:Int) : String = {
     val topGenreDF = Init.getTopGenresByUserId(userId)
 
@@ -245,7 +246,9 @@ class MovieController @Inject()(implicit webJarAssets: WebJarAssets,
 
     val genreInfo = getTopGenreInfo(userId)
 
-    Ok(views.html.comparerating(userId, userRatings, recommendMovies, genreInfo))
+    val userRatingSummaryStat = gettUserRatingSummaryStats(userId)
+
+    Ok(views.html.comparerating(userId, userRatings, recommendMovies, genreInfo, userRatingSummaryStat))
   }
 
   private def convertToRatingObjects(ratingDF:DataFrame) : List[Rating] = {
@@ -309,6 +312,32 @@ class MovieController @Inject()(implicit webJarAssets: WebJarAssets,
   }
 
 
+  private def gettUserRatingSummaryStats(userId:Int) : UserRatingSummaryStat = {
+    val summaryStat = Init.getUserRatingSummaryStats(userId)
+
+    var count:Int = 0
+    var mean:Float = 0.0f
+    var stddev:Float = 0.0f
+    var min:Float = 0.0f
+    var max:Float = 0.0f
+
+    for (summary <- summaryStat.toJSON.collect()) {
+
+      val summaryJSON:JsValue = Json.parse(summary)
+      val summaryType = (summaryJSON \ "summary").as[String]
+      val ratingValue = (summaryJSON \ "rating").as[String]
+
+      summaryType match {
+        case "count" => count = ratingValue.toInt
+        case "mean" => mean = ratingValue.toFloat
+        case "stddev" => stddev = ratingValue.toFloat
+        case "min" => min = ratingValue.toFloat
+        case "max" => max = ratingValue.toFloat
+      }
+    }
+
+    UserRatingSummaryStat(userId, count, mean, stddev, min, max)
+  }
 
 }
 
